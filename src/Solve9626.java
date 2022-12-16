@@ -1,39 +1,30 @@
+import java.util.Arrays;
+
 public class Solve9626 {
-    static StringBuilder builder;
     public static void main(String[] args) throws Exception {
-        builder = new StringBuilder();
         byte M = readByte(), N = readByte(),
-                U = readByte(), L = readByte(), R = readByte(), D = readByte(),
-                len = (byte) (L+N+R);
-        int line = 0;
+                U = readByte(), L = readByte(), R = readByte(), D = readByte();
+        char[][] texts = new char[U+M+D][L+N+R];
+        char odd = '.', even = '#';
 
-        while(U-- > 0) {
-            printDeco(len, 0, (line++)%2 == 0);
-            builder.append('\n');
+        for(int y = 0 ; y < texts.length ; y++) {
+            for(int x = 0 ; x < texts[0].length ; x++) {
+                if(U <= y && y < U+M && x == L) {
+                    byte[] chars = new byte[N+1];
+                    System.in.read(chars, 0, N+1);
+                    for( ; x < L+N ; x++) texts[y][x] = (char) chars[x-L];
+                    x--;
+                    continue;
+                }
+                texts[y][x] = (x%2 == 0) ? even : odd;
+            }
+            odd = (odd == '.') ? '#' : '.';
+            even = (even == '#') ? '.' : '#';
         }
 
-        while(M-- > 0) {
-            int b;
-            printDeco(L, 0, line%2 == 0);
-            while((b = System.in.read()) > 32) builder.append((char) b);
-            printDeco(len, L+N, (line++)%2 == 0);
-            builder.append('\n');
-        }
-
-        while(D-- > 0) {
-            printDeco(len, 0, (line++)%2 == 0);
-            builder.append('\n');
-        }
-
+        StringBuilder builder = new StringBuilder();
+        for(char[] text : texts) builder.append(text).append('\n');
         System.out.print(builder);
-
-    }
-
-    static void printDeco(int len, int start, boolean sharpEven) {
-        char oddChar = sharpEven ? '.' : '#', evenChar = sharpEven ? '#' : '.';
-        for( ; start < len ; start++) {
-            builder.append(start%2 == 0 ? evenChar : oddChar);
-        }
     }
 
     static byte readByte() throws Exception {
