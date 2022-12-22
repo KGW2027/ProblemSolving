@@ -1,84 +1,64 @@
 public class Prob1168 {
-    static int pivot, K, N;
-    static int[] tree;
-    static boolean first;
     public static void main(String[] args) throws Exception {
-        N = read();
-        K = read();
-
-        double exp = Math.ceil(Math.log(N) / Math.log(2)) + 1;
-        int[] segTree = new int[(int) Math.pow(2, exp)];
-        int leap = (int) Math.pow(2, exp-1);
-        for(int i = 0 ; i < N ; i++){
-            segTree[leap+i] = 1;
-            applyParent(segTree, leap+i, 1);
-        }
-        tree = segTree;
+        int N = read(), K = read(), next = 0;
+        int[] tree = init(estimateTreeSize(N), N);
 
         StringBuilder builder = new StringBuilder().append('<');
-        int tried = 0;
-        pivot = tree.length / 2;
-        first = true;
-        while(tried++ < N) {
-            builder.append(next()).append(',').append(' ');
+        while(N-- > 0) {
+            next = next(tree, next, K);
+            builder.append(next).append(',').append(' ');
         }
         builder.setCharAt(builder.length()-2, '>');
         System.out.print(builder);
     }
 
-    static void applyParent(int[] tree, int key, int value) {
-        int parent = key/2;
-        tree[parent] += value;
-        if(parent > 1) applyParent(tree, parent, value);
-    }
-
-    static int next() {
-        int leap = pivot;
-
-        // Check My Order
-        int order = 0, node = leap;
-        if(!first) {
-            while (node > 1) {
-                if (node % 2 == 1) order += tree[(node / 2) * 2];
-                node /= 2;
-            }
-        } else {
-            first = false;
-        }
-
-        // Next
-        order += K;
-        while(order > tree[1]) order -= tree[1];
-
-        // Find
-        node = 1;
-        while(node < tree.length / 2){
-            int left = node * 2, right = left + 1;
+    static int next(int[] tree, int last, int K) {
+        int node = 1, nonLeap = tree.length / 2;
+        int order = last == 0 ? 0 : getOrder(tree, (last + nonLeap - 1));
+        int newK = checkOrderOverflow(tree, order, K);
+        while(node < nonLeap) {
             tree[node]--;
-            if(tree[left] >= order) {
+            int left = node * 2, right = left + 1;
+            if(tree[left] >= newK) {
                 node = left;
             } else {
                 node = right;
-                order -= tree[left];
+                newK -= tree[left];
             }
         }
         tree[node]--;
-
-        pivot = node;
-        return node - ((tree.length / 2) - 1);
+        return (node - nonLeap) + 1;
     }
 
-    static int find(int parent, int order) {
-        while(parent < tree.length / 2) {
-            int left = parent*2, right = parent+1;
-            if(tree[left] >= order) {
-                parent = left;
-            } else {
-                parent = right;
-                order -= tree[left];
+    static int getOrder(int[] tree, int loc) {
+        int cnt = 0;
+        while(loc > 0) {
+            if(loc % 2 == 1) cnt += tree[(loc / 2) * 2];
+            loc /= 2;
+        }
+        return cnt;
+    }
+
+    static int estimateTreeSize(int N) {
+        return (1 << ((int) Math.ceil(Math.log(N) / Math.log(2)) + 1));
+    }
+
+    static int checkOrderOverflow(int[] tree, int order, int K) {
+        int find = order+K;
+        while(tree[1] < find) find -= tree[1];
+        return find;
+    }
+
+    static int[] init(int size, int N) {
+        int[] tree = new int[size];
+        for(int i = 0 ; i < N ; i++) {
+            int key = (size / 2) + i;
+            while(key > 0) {
+                tree[key]++;
+                key /= 2;
             }
         }
-        return parent;
+        return tree;
     }
 
     static int read() throws Exception {

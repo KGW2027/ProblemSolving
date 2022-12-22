@@ -1,47 +1,37 @@
 public class Prob12899 {
-    static final int MAX = 2_000_000;
-    static int NON_LEAP;
     public static void main(String[] args) throws Exception {
         int N = read();
-        int[] tree = makeTree();
+        int[] tree = new int[(1 << 22)+1];
         StringBuilder builder = new StringBuilder();
         while(N-- > 0) {
-            if(read() == 1) addNew(tree, read());
-            else builder.append(subtract(tree, read())).append('\n');
+            if(read() == 1) set(tree, read());
+            else builder.append(poll(tree, read())).append('\n');
         }
         System.out.print(builder);
     }
 
-    static int[] makeTree() {
-        NON_LEAP = (1 << (int) Math.ceil(Math.log(MAX) / Math.log(2))) - 1;
-        return new int[(NON_LEAP+1) << 1];
-    }
-
-    static void addNew(int[] tree, int num) {
-        int key = NON_LEAP+num;
-        tree[key]++;
-        do{
-            key /= 2;
+    static void set(int[] tree, int X){
+        int key = (1 << 21) + (X - 1);
+        while(key > 0) {
             tree[key]++;
-        }while(key > 0);
+            key /= 2;
+        }
     }
 
-    static int subtract(int[] tree, int num) {
-        int find = 1;
-
-        while(find <= NON_LEAP) {
-            tree[find]--;
-
-            int left = find * 2, right = left + 1;
-            if (tree[left] >= num) {
-                find = left;
+    static int poll(int[] tree, int X) {
+        int node = 1, nonLeap = (1 << 21);
+        while(node < nonLeap) {
+            tree[node]--;
+            int left = node * 2, right = left + 1;
+            if(tree[left] >= X) {
+                node = left;
             } else {
-                num -= tree[left];
-                find = right;
+                node = right;
+                X -= tree[left];
             }
         }
-        tree[find]--;
-        return find-NON_LEAP;
+        tree[node]--;
+        return (node - nonLeap) + 1;
     }
 
     static int read() throws Exception {
