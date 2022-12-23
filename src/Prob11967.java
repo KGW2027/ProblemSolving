@@ -1,88 +1,59 @@
 import java.util.*;
 
 public class Prob11967 {
-    static class Room {
-        public byte x, y;
-        public byte[][] conns;
-        public boolean reachable;
-        public Room(byte x, byte y) {
-            this.x = x; this.y = y;
-            reachable = false;
-        }
-        public void add(byte x, byte y) {
-            if(conns == null) conns = new byte[1][];
-            else conns = Arrays.copyOf(conns, conns.length+1);
-            conns[conns.length-1] = new byte[]{x, y};
-        }
-    }
     static short count;
     public static void main(String[] args) throws Exception {
         byte N = read();
         short M = readShort();
-        Room[][] rooms = new Room[N][N];
+        byte[][] matches = new byte[N*N][0];
         count = 1;
 
         while(M-- > 0) {
             byte x = read(), y = read(), a = read(), b = read();
-            if(rooms[y-1][x-1] == null) rooms[y-1][x-1] = new Room(x, y);
-            if(rooms[b-1][a-1] == null) rooms[b-1][a-1] = new Room(a, b);
-            rooms[y-1][x-1].add(a, b);
+            int key = (y-1)*N+(x-1);
+            byte[] arr = matches[key];
+            matches[key] = Arrays.copyOf(arr, arr.length+2);
+            matches[key][arr.length] = (byte) (a-1);
+            matches[key][arr.length+1] = (byte) (b-1);
         }
 
-        Queue<Room> queue = new LinkedList<>();
+        Queue<byte[]> queue = new LinkedList<>();
         boolean[][] light = new boolean[N][N];
-        queue.add(rooms[0][0]);
+        boolean[][] visited = new boolean[N][N];
+        boolean[][] reserved = new boolean[N][N];
+        queue.add(new byte[]{0, 0});
         light[0][0] = true;
-        rooms[0][0].reachable = true;
+        int count = 1;
 
-        int befCount;
-        do{
-            befCount = count;
-            dfs(rooms, light, new boolean[N][N], 0, 0);
-            queue = simulate(queue, light, rooms);
-        } while(befCount != count);
+        byte[][] directions = new byte[][]{ {0, -1}, {0, 1}, {1, 0}, {-1, 0} };
 
-        System.out.print(count);
-
-    }
-
-    static Queue<Room> simulate(Queue<Room> queue, boolean[][] light, Room[][] rooms) {
-        Queue<Room> failQ = new LinkedList<>();
         while(!queue.isEmpty()) {
-            Room room = queue.poll();
-            if(room.conns == null)
-                continue;
+            byte[] pos = queue.poll();
+            byte x = pos[0], y = pos[1];
+            if(visited[y][x]) continue;
+            visited[y][x] = true;
 
-            if(!room.reachable) {
-                failQ.add(rooms[room.y-1][room.x-1]);
-                continue;
+            int matchKey = y*N+x;
+            for(int key = 0 ; key < matches[matchKey].length ; ) {
+                byte tx = matches[matchKey][key++], ty = matches[matchKey][key++];
+                if(!light[ty][tx]) {
+                    light[ty][tx] = true;
+                    count++;
+                    if(reserved[ty][tx]) queue.add(new byte[]{tx, ty});
+                }
             }
 
-            for(byte[] conn : room.conns) {
-                int x = conn[0]-1, y = conn[1]-1;
-                if(!light[y][x]) {
-                    count++;
-                    light[y][x] = true;
-                    queue.add(rooms[y][x]);
+            for(byte[] dir : directions) {
+                int dx = x + dir[0], dy = y + dir[1];
+                if(isRange(dx, dy, N)) {
+                    if(light[dy][dx]) queue.add(new byte[]{(byte) dx, (byte) dy});
+                    else reserved[dy][dx] = true;
                 }
             }
         }
-        return failQ;
-    }
 
-    static void dfs(Room[][] rooms, boolean[][] light, boolean[][] visited, int x, int y) {
-        if(!isRange(x, y, rooms.length) || visited[y][x]) return;
-        visited[y][x] = true;
+        System.out.print(count);
 
-        if(rooms[y][x] != null)
-            rooms[y][x].reachable = true;
-
-        if(light[y][x]) {
-            dfs(rooms, light, visited, x, y-1);
-            dfs(rooms, light, visited, x, y+1);
-            dfs(rooms, light, visited, x-1, y);
-            dfs(rooms, light, visited, x+1, y);
-        }
     }
 
     static boolean isRange(int x, int y, int len) {
