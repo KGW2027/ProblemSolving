@@ -16,13 +16,16 @@ public class Prob11779 {
 
         // 간선 그래프 맵 입력
         Path[][] paths = new Path[N][0];
+        boolean[][] pathExists = new boolean[N][N];
         while(M-- > 0){
-            int key = read()-1, to = read()-1, range = read(), dup = findDup(paths[key], to);
-            if(dup == -1) {
+            int key = read()-1, to = read()-1, range = read();
+            if(pathExists[key][to]) {
+                int dup = findDup(paths[key], to);
+                paths[key][dup].Range = Math.min(paths[key][dup].Range, range);
+            } else {
                 paths[key] = java.util.Arrays.copyOf(paths[key], paths[key].length+1);
                 paths[key][paths[key].length-1] = new Path(to, range);
-            } else {
-                paths[key][dup].Range = Math.min(paths[key][dup].Range, range);
+                pathExists[key][to] = true;
             }
         }
         int A = read()-1, B = read()-1;
