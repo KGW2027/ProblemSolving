@@ -120,8 +120,8 @@ public class Prob17081 {
                 byte[] dir = Move(Command[turn++]);
                 int nx = playerX + dir[0], ny = playerY + dir[1];
 
-                if(!isOutOfGrid(nx, ny) && Map[ny][nx] != '#') { // 이동에 성공한 경우
-                    if(Map[playerY][playerX] == '@') Map[playerY][playerX] = '.'; // 이전 위치는 .으로 변경
+                if(!isOutOfGrid(nx, ny) && Map[ny][nx] != '#') {
+                    if(Map[playerY][playerX] == '@') Map[playerY][playerX] = '.';
                     playerX = nx; playerY = ny;
                 }
 
