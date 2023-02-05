@@ -16,24 +16,33 @@ public class Prob17081 {
     }
 
     static class Equipment implements SlotInfo {
-        boolean isWeapon;
-        int num;
-        Equipment(boolean a, int b) {
-            isWeapon = a;
+        int type, num;
+        Equipment(int type, int b) { // Type 0 : Weapon, Type : 1 Armor
+            this.type = type;
             num = b;
+        }
+        Equipment(String a) { // Type 2 : Accessory
+            type = 2;
+            if(a.equals("HR")) num = 0;
+            else if(a.equals("RE")) num = 1;
+            else if(a.equals("CO")) num = 2;
+            else if(a.equals("EX")) num = 3;
+            else if(a.equals("DX")) num = 4;
+            else if(a.equals("HU")) num = 5;
+            else num = 6;
         }
     }
 
     static class Accessory implements SlotInfo {
-        int effect;
+        int num;
         Accessory(String a) {
-            if(a.equals("HR")) effect = 0;
-            else if(a.equals("RE")) effect = 1;
-            else if(a.equals("CO")) effect = 2;
-            else if(a.equals("EX")) effect = 3;
-            else if(a.equals("DX")) effect = 4;
-            else if(a.equals("HU")) effect = 5;
-            else effect = 6;
+            if(a.equals("HR")) num = 0;
+            else if(a.equals("RE")) num = 1;
+            else if(a.equals("CO")) num = 2;
+            else if(a.equals("EX")) num = 3;
+            else if(a.equals("DX")) num = 4;
+            else if(a.equals("HU")) num = 5;
+            else num = 6;
         }
     }
 
@@ -137,17 +146,15 @@ public class Prob17081 {
                         }
                     }
                 } else if(CurSlot == 'B') {
-                    if(Infos[playerY][playerX] instanceof Equipment) {
-                        Equipment equip = (Equipment) Infos[playerY][playerX];
-                        if(equip.isWeapon) player.weapon = equip;
-                        else player.armor = equip;
-                    } else {
-                        Accessory accessory = (Accessory) Infos[playerY][playerX];
-                        if(player.equip_accessories < 4 && !player.accessory[accessory.effect]) {
-                            player.accessory[accessory.effect] = true;
-                            player.equip_accessories++;
-                        }
+                    Equipment equip = (Equipment) Infos[playerY][playerX];
+
+                    if(equip.type == 0) player.weapon = equip;
+                    else if(equip.type == 1) player.armor = equip;
+                    else if(player.equip_accessories < 4 && !player.accessory[equip.num]) {
+                        player.accessory[equip.num] = true;
+                        player.equip_accessories++;
                     }
+
                     Map[playerY][playerX] = '@';
                 } else if(CurSlot == '&' || CurSlot == 'M') {
 
@@ -242,11 +249,8 @@ public class Prob17081 {
         while(items-- > 0) {
             int r = read(), c = read();
             char t = readCommand().charAt(0);
-            if(t == 'O') {
-                game.SetInfo(r, c, new Accessory(readCommand()));
-            } else {
-                game.SetInfo(r, c, new Equipment(t == 'W', read()));
-            }
+            if(t == 'O') game.SetInfo(r, c, new Equipment(readCommand()));
+            else game.SetInfo(r, c, new Equipment(t == 'W' ? 0 : 1, read()));
         }
 
         game.Simulate();
